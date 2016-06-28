@@ -16,14 +16,17 @@ class Message{
     explicit Message(const string& str=""):
              contents(str) { };
     Message(const Message&);
+    Message(Message&&);
     ~Message();
     Message& operator= (const Message&);
+    Message& operator= (Message&&);
     void save(Folder&);
     void remove(Folder&);
     void print();
     private:
     string contents;
     set<Folder*> folders;
+    void moveFolders(Message*);
     void addFolder(Folder* pFolder){ folders.insert(pFolder);}
     void removeFolder(Folder* pFolder){ folders.erase(pFolder);}
     void addToFolders(const Message&);
@@ -52,11 +55,22 @@ Message::Message(const Message& mes):
 Message::~Message(){
     removeFromFolders();
 }
+Message::Message(Message&& mes):contents(move(mes.contents)){
+    moveFolders(&mes);
+}
 Message& Message::operator=(const Message& mes){
     removeFromFolders();
     contents=mes.contents;
     folders=mes.folders;
     addToFolders(mes);
+    return *this;
+}
+Message& Message::operator=(Message&& mes){
+    if(this!=&mes){
+        removeFromFolders();
+        contents=move(mes.contents);
+        moveFolders(&mes);
+    }
     return *this;
 }
 void Message::save(Folder& folder){
@@ -70,6 +84,14 @@ void Message::remove(Folder& folder){
 void Message::print(){
     cout<<contents<<endl;
     cout<<"save in "<<folders.size()<<" folders"<<endl;
+}
+void Message::moveFolders(Message* mes){
+    folders=move(mes->folders);
+    for(auto i:folders){
+        i->removeMessage(mes);
+        i->addMessage(this);
+    }
+    mes->folders.clear();
 }
 void Message::addToFolders(const Message& mes){
     for(auto i:mes.folders)
