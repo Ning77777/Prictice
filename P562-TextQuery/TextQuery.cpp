@@ -20,3 +20,12 @@ TextQuery::TextQuery(std::ifstream& is) : file(new std::vector<std::string>) {
         }
     }
 }
+
+QueryResult TextQuery::query(const string& str) const {
+    static shared_ptr<std::set<lineNo>> nodata(new std::set<lineNo>);
+    auto found = wordMap.find(str);
+    if(found == wordMap.end())
+        return QueryResult(str, nodate, file);
+    else
+        return QueryResult(str, found->second, file);
+}
