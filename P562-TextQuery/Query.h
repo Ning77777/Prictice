@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <memory>
+
 #include "Query_base.h"
 #include "QueryResult.h"
 #include "TextQuery.h"
